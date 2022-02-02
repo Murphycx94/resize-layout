@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="item-1">
+        <div style="min-width: 800px;background-color: red;height: 20px;"></div>
+        <div style="min-width: 100px;background-color: #ccc;height: 20px;"></div>
+      </div>
+      <div class="item-2">
+        <div class="text" style="width: 100%">
+          Lorem ipsum, dolor sit amet consectetur adipisicing elit. Reiciendis id obcaecati doloremque corrupti amet,
+          possimus nemo nostrum voluptatum a odio cum nihil distinctio eius delectus hic. In accusamus impedit unde.
+        </div>
+      </div>
+    </div>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+      }
+      .wrap {
+        display: flex;
+      }
+      .text {
+        white-space: nowrap;
+      }
+      .item-1 {
+        flex: 1;
+        display: flex;
+        overflow: hidden;
+      }
+      .item-2 {
+        width: 400px;
+        border: 1px solid #ccc;
+      }
+    </style>
+  </body>
+</html>
