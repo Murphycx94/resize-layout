@@ -1,9 +1,15 @@
 import { CSSProperties } from 'vue'
-import { IData, IPosition, ISize } from '../types'
-import { DirectionEnum, NodeTypeEnum } from '../enums'
+import { IData, IPosition, ISize, IDragPosition } from '../types'
+import { DirectionEnum } from '../enums'
 
 const useSafeNumber = (v: string | number = 0, backup = 0) => Number(v) || backup
 
+/**
+ * 当容器尺寸变化重新计算子节点宽高以及布局
+ * @param data 
+ * @param size 
+ * @param position 
+ */
 export const useAutoResize = (data: IData, size: ISize, position: IPosition = { top: 0, left: 0 }): void => {
   data.height = size.height
   data.width = size.width
@@ -48,6 +54,12 @@ export const useAutoResize = (data: IData, size: ISize, position: IPosition = { 
   }
 }
 
+/**
+ * 传入宽高、排列方向，获得容器 style 对象
+ * @param data 
+ * @param direction 
+ * @returns 
+ */
 export const getViewStyle = (data: IData, direction: DirectionEnum): CSSProperties => {
   const sizeKey = direction === DirectionEnum.vertical ? 'height' : 'width'
   const positionKey = direction === DirectionEnum.vertical ? 'top' : 'left'
@@ -57,3 +69,28 @@ export const getViewStyle = (data: IData, direction: DirectionEnum): CSSProperti
     [positionKey]: data[positionKey] + 'px',
   }
 }
+
+export const setSize = (data: IData, position: IDragPosition, index: number): void => {
+  const children = data.children
+
+  const current = children[index]
+  const next = children[index + 1]
+
+  const keys: { size: 'width' | 'height', position: 'top' | 'left', distance: 'xDistance' | 'yDistance' } = {
+    size: 'width',
+    position: 'left',
+    distance: 'xDistance'
+  }
+
+  if (data.direction === DirectionEnum.vertical) {
+    keys.size = 'height'
+    keys.position = 'top'
+    keys.distance = 'yDistance'
+  }
+
+  console.log(current, next)
+  current[keys.size] += position[keys.distance]
+  next[keys.size] -= position[keys.distance]
+  next[keys.position] = useSafeNumber(next[keys.position]) + position[keys.distance]
+}
+

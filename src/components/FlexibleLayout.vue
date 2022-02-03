@@ -9,10 +9,11 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref, VueElement, computed, watch } from 'vue'
+import { throttle } from 'lodash'
+import { onMounted, reactive, ref, VueElement, computed } from 'vue'
 import { IData, ISize } from '../types'
-import FlexibleNode from './FlexibleNode.vue'
 import { useAutoResize } from './_utils'
+import FlexibleNode from './FlexibleNode.vue'
 
 const props = defineProps<{
   data: IData
@@ -39,14 +40,18 @@ const getOriginFlSize = (target: VueElement) => {
   }
 }
 
-let count = 0
+const resizeHandler = throttle(useAutoResize, 16, { trailing: true, leading: true })
 
 onMounted(() => {
   const resizeObserver = new ResizeObserver((entries) => {
     const [fl] = entries
     const target = fl.target as VueElement
     getOriginFlSize(target)
-    useAutoResize(props.data, originFlSize)
+    resizeHandler(props.data, originFlSize)
+    , 16, {
+  leading: true,
+  trailing: true
+}
   })
   if (flRef.value) {
     resizeObserver.observe(flRef.value)
@@ -61,7 +66,7 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  overflow: hidden; // 防止抖动
   .fl-resize-wrap {
     width: 100%;
     height: 100%;

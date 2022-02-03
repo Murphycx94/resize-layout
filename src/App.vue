@@ -89,11 +89,12 @@ const data = reactive<IData>({
 })
 </script>
 
-<style>
+<style lang="scss">
 * {
   padding: 0;
   margin: 0;
   box-sizing: border-box;
+  user-select: none;
 }
 .app {
   width: 100vw;
@@ -104,4 +105,36 @@ const data = reactive<IData>({
 .fl-resize-wrap {
   /* border: 1px solid #ccc; */
 }
+/* 滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+/* 定义滚动条轨道 内阴影 + 圆角 */
+/* ::-webkit-scrollbar-track {
+} */
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #4f586b;
+}
+
+::-webkit-scrollbar-track:hover {
+  border-radius: 2px;
+  background-color: rgba($color: #343d4d, $alpha: 0.3);
+}
+
+/** 滚动条角落 */
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* 定义滑块 内阴影 + 圆角 */
+::-webkit-scrollbar-thumb {
+  border-radius: 2px;
+  box-shadow: inset 0 0 6px rgba(26, 25, 25, 0.3);
+  -webkit-box-shadow: inset 0 0 6px rgba(26, 25, 25, 0.3);
+  background-color: #343d4d;
+}
+
 </style>

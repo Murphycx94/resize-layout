@@ -21,3 +21,10 @@ interface IPosition {
   top?: number
   left?: number
 }
+
+interface IDragPosition {
+  x: number
+  y: number
+  xDistance: number
+  yDistance: number
+}
