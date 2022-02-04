@@ -44,11 +44,13 @@ export const useAutoResize = (data: IData, size: ISize, position: IPosition = { 
 
       const currentPosition = { [positionKey]: positionValue }
 
+      const minValue = node.minSize[sizeKey]
+
       // 最后一个不要按占比计算了，直接取剩余长度就可以了（因为每次取值四舍五入最后值可能会大于预期值）
       if (index === children.length - 1) {
-        value = base - positionValue
+        value = Math.max(base - positionValue, minValue)
       } else {
-        value = Math.round((useSafeNumber(node[sizeKey], 1) / sum) * base)
+        value = Math.max(Math.round((useSafeNumber(node[sizeKey], 1) / sum) * base), minValue)
         positionValue += value
       }
 
@@ -59,14 +61,14 @@ export const useAutoResize = (data: IData, size: ISize, position: IPosition = { 
   }
 }
 
-type ICountMap = {
-  horizontal: number
-  vertical: number
-}
+/**
+ * 重新计算并设置各个节点最小尺寸，以及横纵最大成员数，并返回当前节点最小尺寸信息
+ * @param data 
+ * @returns 
+ */
+export const getNodeMinSize = (data: IData) => {
+  const loop = (data: IData) => {
 
-export const getNodeMin = (data: IData) => {
-  const loop = (data: IData, countMap: ICountMap) => {
-    // let { horizontal, vertical } = countMap
     let horizontal = 0
     let vertical = 0
     const count = data.children.length
@@ -77,34 +79,33 @@ export const getNodeMin = (data: IData) => {
       vertical += count
     }
 
-    let tempH = 0
-    let tempV = 0
+    let childrenH = 0
+    let childrenV = 0
 
     data.children.forEach((c) => {
-      const res = loop(c, { horizontal, vertical })
-      tempH = Math.max(tempH, res.horizontal)
-      tempV = Math.max(tempV, res.vertical)
+      const res = loop(c)
+      childrenH = Math.max(childrenH, res.horizontal)
+      childrenV = Math.max(childrenV, res.vertical)
     })
-    
+
+    horizontal += childrenH
+    vertical += childrenV
+
     data.minSize = {
-      // width: Math.max(tempH - horizontal + 1, 1),
-      // height: Math.max(tempV - vertical + 1, 1),
-    }
-
-    tempH && (horizontal = tempH)
-    tempV && (vertical = tempV)
-
-    return {
+      width: Math.max(horizontal,1) * Constant.width,
+      height: Math.max(vertical,1) * Constant.height,
       horizontal,
       vertical,
     }
+
+    return {
+      ...data.minSize
+    }
   }
 
-  const res = loop(data, { horizontal: 0, vertical: 0 })
+  const res = loop(data)
 
-  return {
-    ...res,
-  }
+  return res
 }
 
 /**

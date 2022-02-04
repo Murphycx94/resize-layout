@@ -1,6 +1,14 @@
 import { DirectionEnum, NodeTypeEnum } from './enums'
 
+interface IMinSize {
+  width: number
+  height: number
+  horizontal: number
+  vertical: number
+}
+
 interface IData {
+  minSize: IMinSize
   nodeId: string
   children: IData[]
   direction: DirectionEnum
