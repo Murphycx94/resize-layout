@@ -235,7 +235,18 @@ const extrusionHandler = (
   if (action === ActionEnum.forward) {
     const len = list.length
     let i = originIndex + 1
+    const leftList = list.slice(i)
+    
+    const total = leftList.reduce((s, c) => {
+      s.min += c.minSize[keys.size]
+      s.size += c[keys.size]
+      return s
+    }, { min: 0, size: 0 })
 
+
+    const threshold = total.size - total.min
+    if (threshold < distance) distance = threshold
+    
     for (; i < len; i++) {
       const node = list[i]
       const remainder = node[keys.size] - distance
