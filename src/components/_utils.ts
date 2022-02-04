@@ -63,12 +63,11 @@ export const useAutoResize = (data: IData, size: ISize, position: IPosition = { 
 
 /**
  * 重新计算并设置各个节点最小尺寸，以及横纵最大成员数，并返回当前节点最小尺寸信息
- * @param data 
- * @returns 
+ * @param data
+ * @returns
  */
 export const getNodeMinSize = (data: IData) => {
   const loop = (data: IData) => {
-
     let horizontal = 0
     let vertical = 0
     const count = data.children.length
@@ -92,14 +91,14 @@ export const getNodeMinSize = (data: IData) => {
     vertical += childrenV
 
     data.minSize = {
-      width: Math.max(horizontal,1) * Constant.width,
-      height: Math.max(vertical,1) * Constant.height,
+      width: Math.max(horizontal, 1) * Constant.width,
+      height: Math.max(vertical, 1) * Constant.height,
       horizontal,
       vertical,
     }
 
     return {
-      ...data.minSize
+      ...data.minSize,
     }
   }
 
@@ -177,8 +176,10 @@ const findNeighbor = (
     : null
 }
 
+type IKeys = { size: 'width' | 'height'; position: 'top' | 'left'; distance: 'xDistance' | 'yDistance' }
+
 export const setSize = (data: IData, position: IDragPosition, index: number, disabledCallback?: () => void): void => {
-  const keys: { size: 'width' | 'height'; position: 'top' | 'left'; distance: 'xDistance' | 'yDistance' } = {
+  const keys: IKeys = {
     size: 'width',
     position: 'left',
     distance: 'xDistance',
@@ -212,13 +213,55 @@ export const setSize = (data: IData, position: IDragPosition, index: number, dis
   console.log('======', distance)
 
   // TODO 拖动同轴挤压
-  const currentSize = current[keys.size] + distance
 
+  // if (action === ActionEnum.forward) {
+  //   const diff = distance
+  //   const currentValue = current[keys.size] + distance
+  // }
+  extrusionHandler(children, Math.abs(distance), action, index, keys)
+
+  // current[keys.size] = Math.max(current[keys.size] + distance, threshold)
+  // next[keys.size] -= distance
+  // next[keys.position] = useSafeNumber(next[keys.position]) + distance
+}
+
+const extrusionHandler = (
+  list: IData[],
+  distance: number,
+  action: ActionEnum,
+  originIndex: number,
+  keys: IKeys
+) => {
   if (action === ActionEnum.forward) {
-    const diff = distance
-  }
+    const len = list.length
+    let i = originIndex + 1
 
-  current[keys.size] = Math.max(current[keys.size] + distance, threshold)
-  next[keys.size] -= distance
-  next[keys.position] = useSafeNumber(next[keys.position]) + distance
+    for (; i < len; i++) {
+      const node = list[i]
+      const remainder = node[keys.size] - distance
+      const minValue = node.minSize[keys.size]
+
+      const size = {
+        height: node.height,
+        width: node.width,
+      }
+
+      const position = {
+        top: node.top,
+        left: node.left,
+      }
+
+      size[keys.size] = Math.max(remainder, minValue)
+      position[keys.position] = useSafeNumber(node[keys.position]) + distance
+
+      useAutoResize(node, size, position)
+
+      if (minValue > remainder) {
+        distance = minValue - remainder
+      } else {
+        break
+      }
+    }
+  } else if (action === ActionEnum.backward) {
+  }
 }
