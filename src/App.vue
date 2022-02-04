@@ -9,6 +9,7 @@ import FlexibleLayout from './components/FlexibleLayout.vue'
 import { reactive } from 'vue'
 import { DirectionEnum, NodeTypeEnum } from './enums'
 import { IData } from './types'
+import { getNodeMin } from './components/_utils'
 
 const data = reactive<IData>({
   type: NodeTypeEnum.node,
@@ -20,18 +21,7 @@ const data = reactive<IData>({
   left: 0,
   children: [
     {
-      nodeId: '2',
-      type: NodeTypeEnum.item,
-      direction: DirectionEnum.unknown,
-      component: 'text1',
-      width: 0,
-      height: 0,
-      top: 0,
-      left: 0,
-      children: [],
-    },
-    {
-      nodeId: '3',
+      nodeId: '0',
       type: NodeTypeEnum.item,
       direction: DirectionEnum.unknown,
       component: 'text2',
@@ -40,6 +30,85 @@ const data = reactive<IData>({
       top: 0,
       left: 0,
       children: [],
+    },
+    {
+      nodeId: '2',
+      type: NodeTypeEnum.node,
+      direction: DirectionEnum.vertical,
+      component: 'text1',
+      width: 0,
+      height: 0,
+      top: 0,
+      left: 0,
+      children: [
+        {
+          nodeId: '2-1',
+          type: NodeTypeEnum.node,
+          direction: DirectionEnum.horizontal,
+          component: 'text1-1',
+          width: 0,
+          height: 0,
+          top: 0,
+          left: 0,
+          children: [
+            {
+              nodeId: '2-1-1',
+              type: NodeTypeEnum.item,
+              direction: DirectionEnum.unknown,
+              component: 'text1-1-1',
+              width: 0,
+              height: 0,
+              top: 0,
+              left: 0,
+              children: [],
+            },
+            {
+              nodeId: '2-1-2',
+              type: NodeTypeEnum.item,
+              direction: DirectionEnum.unknown,
+              component: 'text1-1-2',
+              width: 0,
+              height: 0,
+              top: 0,
+              left: 0,
+              children: [],
+            },
+            {
+              nodeId: '2-1-3',
+              type: NodeTypeEnum.item,
+              direction: DirectionEnum.unknown,
+              component: 'text1-1-3',
+              width: 0,
+              height: 0,
+              top: 0,
+              left: 0,
+              children: [],
+            },
+          ],
+        },
+        {
+          nodeId: '2-2',
+          type: NodeTypeEnum.item,
+          direction: DirectionEnum.unknown,
+          component: 'text1-2',
+          width: 0,
+          height: 0,
+          top: 0,
+          left: 0,
+          children: [],
+        },
+        {
+          nodeId: '2-3',
+          type: NodeTypeEnum.item,
+          direction: DirectionEnum.unknown,
+          component: 'text1-3',
+          width: 0,
+          height: 0,
+          top: 0,
+          left: 0,
+          children: [],
+        },
+      ],
     },
     {
       nodeId: '4',
@@ -63,14 +132,37 @@ const data = reactive<IData>({
         },
         {
           nodeId: '6',
-          type: NodeTypeEnum.item,
-          direction: DirectionEnum.unknown,
+          type: NodeTypeEnum.node,
+          direction: DirectionEnum.horizontal,
           component: 'text4',
           width: 0,
           height: 0,
           top: 0,
           left: 0,
-          children: [],
+          children: [
+            {
+              nodeId: '6-1',
+              type: NodeTypeEnum.item,
+              direction: DirectionEnum.unknown,
+              component: 'text4',
+              width: 0,
+              height: 0,
+              top: 0,
+              left: 0,
+              children: [],
+            },
+            {
+              nodeId: '6-2',
+              type: NodeTypeEnum.item,
+              direction: DirectionEnum.unknown,
+              component: 'text4',
+              width: 0,
+              height: 0,
+              top: 0,
+              left: 0,
+              children: [],
+            },
+          ],
         },
         {
           nodeId: '7',
@@ -87,6 +179,8 @@ const data = reactive<IData>({
     },
   ],
 })
+
+console.log('=======', getNodeMin(data), data)
 </script>
 
 <style lang="scss">
@@ -136,5 +230,4 @@ const data = reactive<IData>({
   -webkit-box-shadow: inset 0 0 6px rgba(26, 25, 25, 0.3);
   background-color: #343d4d;
 }
-
 </style>

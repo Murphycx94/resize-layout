@@ -9,7 +9,7 @@ import { IDragPosition } from '../types'
  *  position: { x: 鼠标 x 坐标，y: 鼠标 y 坐标，xDistance: 本次移动的 x 轴距离，yDistance: 本次移动的 y 轴距离 }
  * }
  */
- export const useDrag = () => {
+export const useDrag = () => {
   const isMoving = ref(false)
 
   const position = ref<IDragPosition>({
@@ -22,7 +22,7 @@ import { IDragPosition } from '../types'
   const onDragStart = (e: Event) => {
     console.log('=====start', e.target)
     const event = e as MouseEvent
-    
+
     isMoving.value = true
 
     position.value = {
@@ -34,18 +34,28 @@ import { IDragPosition } from '../types'
 
     document.addEventListener('mousemove', onDragMove)
     document.addEventListener('mouseup', onDragEnd)
+     // 防止右键菜单弹出导致 bug，所以在拖动时先关闭右键菜单
+    document.addEventListener('contextmenu', onContextmenu)
   }
 
-  const onDragMove = throttle((e: MouseEvent) => {
-    updateHandler(e.pageX, e.pageY)
-  }, 16, { trailing: true, leading: true })
+  const onContextmenu = (e: Event) => e.preventDefault()
+
+  const onDragMove = throttle(
+    (e: MouseEvent) => {
+      updateHandler(e.pageX, e.pageY)
+    },
+    16,
+    { trailing: true, leading: true }
+  )
 
   const onDragEnd = () => {
     isMoving.value = false
 
     document.removeEventListener('mousemove', onDragMove)
     document.removeEventListener('mouseup', onDragEnd)
+    document.removeEventListener('contextmenu', onContextmenu)
   }
+
 
   const updateHandler = (x: number, y: number) => {
     const xDistance = x - position.value.x

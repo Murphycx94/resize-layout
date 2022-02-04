@@ -9,11 +9,7 @@
       >
         <FlexibleNode :direction="item.direction" v-if="item.type === NodeTypeEnum.node" :data="item" />
         <FlexibleItem v-else-if="item.type === NodeTypeEnum.item" :data="item" />
-        <FlexibleNodeSashBar
-          :data="item"
-          :direction="data.direction"
-          @resize="(e) => onViewResize(e, index)"
-        />
+        <FlexibleNodeSashBar :data="item" :direction="data.direction" @resize="(e) => onViewResize(e, index)" />
       </section>
     </div>
   </div>
@@ -22,7 +18,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import FlexibleItem from './FlexibleItem.vue'
-import FlexibleNodeSashBar from './FlexibleNodeSashBar.vue';
+import FlexibleNodeSashBar from './FlexibleNodeSashBar.vue'
 import { IData, IDragPosition } from '../types'
 import { DirectionEnum, NodeTypeEnum } from '../enums'
 import { getViewStyle, setSize } from './_utils'
