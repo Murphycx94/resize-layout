@@ -14,8 +14,8 @@ interface IData {
   direction: DirectionEnum
   width: number
   height: number
-  top?: number
-  left?: number
+  top: number
+  left: number
   type: NodeTypeEnum
   component?: string
 }
@@ -35,4 +35,6 @@ interface IDragPosition {
   y: number
   xDistance: number
   yDistance: number
+  id: string
+  el?: Element
 }

@@ -1,23 +1,22 @@
 <template>
-  <div class="fl-sash-bar" @mousedown="dragHandler"></div>
+  <div ref="sashBarRef" class="fl-sash-bar" @mousedown="dragHandler"></div>
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue'
+import { watch, ref, VueElement } from 'vue'
 import { useDrag } from './_composition'
 import { IDragPosition } from '../types'
 
 const { onDragStart, position, isMoving } = useDrag()
 
 const emits = defineEmits<{
-  (
-    e: 'resize',
-    v: IDragPosition
-  ): void
+  (e: 'resize', v: IDragPosition): void
 }>()
 
+const sashBarRef = ref<VueElement>()
+
 watch(position, (e) => {
-  emits('resize', e)
+  emits('resize', { ...e, el: sashBarRef.value })
 })
 // isMoving TODO 未做拖动后的鼠标状态
 

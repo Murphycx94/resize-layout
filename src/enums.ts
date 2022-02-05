@@ -5,15 +5,17 @@ export enum DirectionEnum {
   vertical,
 }
 
+/** 节点类型 */
 export enum NodeTypeEnum {
   item,
-  node
+  node,
 }
 
+/** 拖拽方向 */
 export enum ActionEnum {
-  forward,
-  backward,
-  static
+  forward, // 向前
+  backward, // 向后
+  static, // 静止
 }
 
 export namespace ActionEnum {
@@ -22,4 +24,12 @@ export namespace ActionEnum {
     if (value < 0) return ActionEnum.backward
     return ActionEnum.static
   }
+}
+
+/** 出界方向 */
+export enum OutsideEnum {
+  n, // 北
+  s, // 南
+  w, // 西
+  e, // 东
 }

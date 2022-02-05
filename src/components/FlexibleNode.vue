@@ -16,17 +16,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import FlexibleItem from './FlexibleItem.vue'
 import FlexibleNodeSashBar from './FlexibleNodeSashBar.vue'
 import { IData, IDragPosition } from '../types'
-import { DirectionEnum, NodeTypeEnum } from '../enums'
-import { getViewStyle, setSize } from './_utils'
+import { ActionEnum, DirectionEnum, NodeTypeEnum } from '../enums'
+import { getViewStyle, calcDragSize } from './_utils'
 
 const props = defineProps<{
   data: IData
   direction: DirectionEnum
 }>()
+
+const outsideDirection = ref()
 
 const directionClassName = computed(() => {
   const name: Record<DirectionEnum, string> = {
@@ -39,7 +41,15 @@ const directionClassName = computed(() => {
 
 /** @method */
 const onViewResize = (position: IDragPosition, index: number) => {
-  setSize(props.data, position, index - 1)
+  const res = calcDragSize(props.data, position, index - 1)
+  // TODO 获取边界情况
+  console.log('=====position', position)
+
+  if (res && res.action !== ActionEnum.static) {
+    if (res.direction === DirectionEnum.horizontal) {
+      
+    }
+  }
 }
 </script>
 

@@ -9,7 +9,7 @@ import FlexibleLayout from './components/FlexibleLayout.vue'
 import { reactive } from 'vue'
 import { DirectionEnum, NodeTypeEnum } from './enums'
 import { IData } from './types'
-import { getNodeMinSize } from './components/_utils'
+import { calcNodeMinSize } from './components/_utils'
 
 const data = reactive<IData>({
   type: NodeTypeEnum.node,
@@ -243,7 +243,7 @@ const data = reactive<IData>({
   ],
 })
 
-getNodeMinSize(data)
+calcNodeMinSize(data)
 
 console.log('=====原始数据', data)
 

@@ -1,4 +1,4 @@
-import { throttle } from 'lodash'
+import { throttle, uniqueId } from 'lodash'
 import { ref } from 'vue'
 import { IDragPosition } from '../types'
 
@@ -17,10 +17,10 @@ export const useDrag = () => {
     y: 0,
     xDistance: 0,
     yDistance: 0,
+    id: '',
   })
 
   const onDragStart = (e: Event) => {
-    console.log('=====start', e.target)
     const event = e as MouseEvent
 
     isMoving.value = true
@@ -30,6 +30,7 @@ export const useDrag = () => {
       y: event.pageY,
       xDistance: 0,
       yDistance: 0,
+      id: uniqueId('fl-drag')
     }
 
     document.addEventListener('mousemove', onDragMove)
@@ -66,6 +67,7 @@ export const useDrag = () => {
       y,
       xDistance,
       yDistance,
+      id: position.value.id
     }
   }
 
