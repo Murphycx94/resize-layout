@@ -17,7 +17,7 @@ import FlexibleDropContainer from './FlexibleDropContainer.vue'
 import { Constant } from './_utils'
 
 const props = defineProps<{
-  data: IData
+  data: IData,
 }>()
 
 const content = ref('content: ' + Math.random())

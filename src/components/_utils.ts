@@ -1,6 +1,6 @@
 import { CSSProperties, h, version } from 'vue'
 import { IData, IPosition, ISize, IDragPosition, IKeys } from '../types'
-import { ActionEnum, DirectionEnum, OutsideEnum } from '../enums'
+import { ActionEnum, DirectionEnum, NodeTypeEnum, OutsideEnum } from '../enums'
 
 const useSafeNumber = (v: string | number = 0, backup = 0) => Number(v) || backup
 
@@ -304,10 +304,10 @@ export const getRelativePosition = (x: number, y: number, position: { top: numbe
 
 /**
  * 获取安全的坐标，防止超出边界阈值
- * @param axis 
- * @param threshold 
- * @param key 
- * @returns 
+ * @param axis
+ * @param threshold
+ * @param key
+ * @returns
  */
 export const getSafeAxis = (
   axis: {
@@ -321,14 +321,14 @@ export const getSafeAxis = (
   key: 'x' | 'y'
 ) => {
   const _axis = {
-    ...axis
+    ...axis,
   }
 
   _axis[key] = Math.max(threshold.min, _axis[key])
   _axis[key] = Math.min(threshold.max, _axis[key])
 
   let outsideDirection = OutsideEnum.none
-  
+
   if (axis.x > _axis.x) {
     outsideDirection = OutsideEnum.e
   } else if (axis.x < _axis.x) {
@@ -339,7 +339,7 @@ export const getSafeAxis = (
     outsideDirection = OutsideEnum.n
   }
 
-  return {..._axis, outsideDirection }
+  return { ..._axis, outsideDirection }
 }
 
 export const getMoveThreshold = (data: IData, index: number, keys: IKeys) => {
@@ -357,6 +357,10 @@ export const getMoveThreshold = (data: IData, index: number, keys: IKeys) => {
   }
 }
 
+/**
+ * 修改全局光标样式，拖拽修改尺寸大小时使用
+ * @param globalCursor
+ */
 export const setGlobalCursor = (globalCursor?: string) => {
   // @ts-ignore
   if (!window._flGlobalCursorStyle) {
@@ -366,13 +370,131 @@ export const setGlobalCursor = (globalCursor?: string) => {
   // @ts-ignore
   const styleEl = window._flGlobalCursorStyle
 
-
   if (globalCursor) {
     styleEl.innerHTML = globalCursor
     if (!styleEl.parentElement) {
       document.body.appendChild(styleEl)
     }
-  } else if(styleEl.parentElement) {
+  } else if (styleEl.parentElement) {
     styleEl.parentElement.removeChild(styleEl)
   }
+}
+
+/**
+ * 找到该节点的父节点
+ * @param data
+ * @param nodeId
+ * @returns
+ */
+export const getNodeParent = (data: IData, nodeId: string): IData | undefined => {
+  let target: IData | undefined
+  data.children.forEach((node) => {
+    if (target) return
+    if (node.children.length) {
+      target = getNodeParent(node, nodeId)
+    } else if (nodeId === node.nodeId) {
+      target = data
+    }
+  })
+
+  return target
+}
+
+/**
+ * 创建一个新的节点
+ * @param data
+ * @param children
+ * @returns
+ */
+export const createFlNode = (data: Partial<IData> = {}, children: IData[] = []) => {
+  return {
+    nodeId: `${Math.random()}`, // TODO 待优化
+    type: NodeTypeEnum.node,
+    direction: DirectionEnum.horizontal,
+    width: 0,
+    height: 0,
+    top: 0,
+    left: 0,
+    minSize: { width: 0, height: 0, horizontal: 0, vertical: 0 },
+    children,
+    ...data,
+  }
+}
+
+export const nodeToItem = (node: IData, item: IData) => {
+  Object.assign(node, {
+    children: [],
+    nodeId: item.nodeId,
+    type: item.type,
+    component: item.component,
+    direction: DirectionEnum.unknown,
+    minSize: item.minSize,
+  })
+}
+
+/**
+ * 移除节点，移出完需要调用 calcNodeMinSize 重新计算最小尺寸
+ * @param data 
+ * @param full 
+ * @returns 
+ */
+export const removeNode = (data: IData, full: IData) => {
+  let targetParent = getNodeParent(full, data.nodeId)
+  if (!targetParent) return
+
+  const targetIndex = targetParent.children.findIndex((node) => node.nodeId === data.nodeId)
+
+  targetParent.children.splice(targetIndex, 1)
+
+  if (targetParent.children.length === 1) {
+    nodeToItem(targetParent, targetParent.children[0])
+  }
+}
+
+export const insetNode = (source: IData, target: IData, full: IData, type: OutsideEnum) => {
+  let targetParent = getNodeParent(full, target.nodeId)
+  if (!targetParent) return
+
+  removeNode(source, full)
+
+  // removeNode 之后需要重新找目标的父元素，因为如果source 和 target 是兄弟元素有可能会改变父元素结构的（但是这里很不优雅，需要优化）
+  targetParent = getNodeParent(full, target.nodeId)
+
+  if (!targetParent) return
+  
+  const direction = DirectionEnum.getDirection(type)
+  const targetIndex = targetParent.children.findIndex((node) => node.nodeId === target.nodeId)
+
+
+  if (direction === targetParent.direction) {
+    // 西北插在目标前面，东南插在目标后面
+    targetParent.children.splice(targetIndex + (OutsideEnum.isWN(type) ? 0 : 1), 0, source)
+    targetParent.children.forEach((node) => {
+      node.width = 0
+      node.height = 0
+    })
+  } else {
+    const children = [target]
+
+    children.splice(OutsideEnum.isWN(type) ? 0 : 1, 0, source)
+
+    const node = createFlNode({
+      direction,
+      width: target.width,
+      height: target.height,
+      top: target.top,
+      left: target.left,
+      children,
+    })
+
+    children.forEach((node) => {
+      node.width = 0
+      node.height = 0
+    })
+
+    targetParent.children.splice(targetIndex, 1, node)
+  }
+
+  calcNodeMinSize(full)
+  useAutoResize(full, full)
 }

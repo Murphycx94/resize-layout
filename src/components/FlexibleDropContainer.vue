@@ -15,7 +15,8 @@
 import { computed, nextTick, ref, VueElement, watch } from 'vue'
 import { OutsideEnum } from '../enums'
 import { IData } from '../types'
-import { Constant, getRelativePosition } from './_utils'
+import { useFlexibleData } from './_composition';
+import { Constant, getNodeParent, getRelativePosition, insetNode } from './_utils'
 
 const emits = defineEmits<{
   (e: 'insert', data: IData): void
@@ -143,15 +144,17 @@ const getThreshold = () => {
     y2: position.height - vT,
   }
 }
+const fullData = useFlexibleData()
 
 const onDrop = (e: DragEvent) => {
+  if (!fullData) return
   _isActive.value = false
   console.log('========', props.isActive, _isActive.value)
   const json = e?.dataTransfer?.getData(Constant.dragDataKey)
   if (json) {
-    const data = JSON.parse(json)
-    if (data.nodeId) {
-      emits('insert', data)
+    const source = JSON.parse(json)
+    if (source.nodeId) {
+      insetNode(source, props.data, fullData, activeArea.value)
     }
   }
 }

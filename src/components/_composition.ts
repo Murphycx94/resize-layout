@@ -1,6 +1,6 @@
 import { throttle, uniqueId } from 'lodash'
 import { ref, provide, inject, Ref } from 'vue'
-import { IDragPosition } from '../types'
+import { IData, IDragPosition } from '../types'
 
 /**
  * 拖拽 composition
@@ -96,4 +96,12 @@ export const useDraggableInit = () => {
 
 export const useDraggable = (): IUseDraggable => {
   return inject(draggableKey) as IUseDraggable
+}
+
+const flexibleDataKey = 'fl-data-key'
+export const provideFlexibleData = (data: IData) => {
+  provide(flexibleDataKey, data)
+}
+export const useFlexibleData = (): IData | undefined => {
+  return inject(flexibleDataKey)
 }

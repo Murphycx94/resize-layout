@@ -10,14 +10,17 @@
 
 <script setup lang="ts">
 import { throttle } from 'lodash'
-import { onMounted, reactive, ref, VueElement, computed, provide } from 'vue'
+import { onMounted, reactive, ref, VueElement, computed } from 'vue'
 import { IData, ISize } from '../types'
 import { useAutoResize } from './_utils'
 import FlexibleNode from './FlexibleNode.vue'
+import { provideFlexibleData } from './_composition'
 
 const props = defineProps<{
   data: IData
 }>()
+
+provideFlexibleData(props.data)
 
 const flRef = ref<Element>()
 
@@ -33,6 +36,7 @@ const sizeStyle = computed(() => {
   }
 })
 
+
 const getOriginFlSize = (target: VueElement) => {
   if (target) {
     originFlSize.width = target.offsetWidth
@@ -47,7 +51,9 @@ onMounted(() => {
     const [fl] = entries
     const target = fl.target as VueElement
     getOriginFlSize(target)
+    console.time()
     resizeHandler(props.data, originFlSize)
+    console.timeEnd()
     , 16, {
   leading: true,
   trailing: true
