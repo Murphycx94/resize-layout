@@ -35,6 +35,13 @@ interface IDragPosition {
   y: number
   xDistance: number
   yDistance: number
-  id: string
+  id?: string
   el?: Element
+}
+
+interface IKeys {
+  size: 'width' | 'height'
+  position: 'top' | 'left'
+  distance: 'xDistance' | 'yDistance'
+  axis: 'x' | 'y'
 }

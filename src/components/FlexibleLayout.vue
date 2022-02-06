@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
 import { throttle } from 'lodash'
-import { onMounted, reactive, ref, VueElement, computed } from 'vue'
+import { onMounted, reactive, ref, VueElement, computed, provide } from 'vue'
 import { IData, ISize } from '../types'
 import { useAutoResize } from './_utils'
 import FlexibleNode from './FlexibleNode.vue'

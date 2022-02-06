@@ -9,26 +9,25 @@
       >
         <FlexibleNode :direction="item.direction" v-if="item.type === NodeTypeEnum.node" :data="item" />
         <FlexibleItem v-else-if="item.type === NodeTypeEnum.item" :data="item" />
-        <FlexibleNodeSashBar :data="item" :direction="data.direction" @resize="(e) => onViewResize(e, index)" />
       </section>
     </div>
+    <FlexibleSash :data="data" :class="[directionClassName]" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import FlexibleItem from './FlexibleItem.vue'
-import FlexibleNodeSashBar from './FlexibleNodeSashBar.vue'
-import { IData, IDragPosition } from '../types'
-import { ActionEnum, DirectionEnum, NodeTypeEnum } from '../enums'
-import { getViewStyle, calcDragSize } from './_utils'
+import FlexibleSash from './FlexibleSash.vue'
+
+import { IData } from '../types'
+import { DirectionEnum, NodeTypeEnum } from '../enums'
+import { getViewStyle } from './_utils'
 
 const props = defineProps<{
   data: IData
   direction: DirectionEnum
 }>()
-
-const outsideDirection = ref()
 
 const directionClassName = computed(() => {
   const name: Record<DirectionEnum, string> = {
@@ -39,22 +38,11 @@ const directionClassName = computed(() => {
   return name[props.data.direction] || ''
 })
 
-/** @method */
-const onViewResize = (position: IDragPosition, index: number) => {
-  const res = calcDragSize(props.data, position, index - 1)
-  // TODO 获取边界情况
-  console.log('=====position', position)
-
-  if (res && res.action !== ActionEnum.static) {
-    if (res.direction === DirectionEnum.horizontal) {
-      
-    }
-  }
-}
 </script>
 
 <style lang="scss">
 .fl-node {
+  position: relative;
   width: 100%;
   height: 100%;
 }

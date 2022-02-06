@@ -1,5 +1,5 @@
 import { throttle, uniqueId } from 'lodash'
-import { ref } from 'vue'
+import { ref, provide, inject, Ref } from 'vue'
 import { IDragPosition } from '../types'
 
 /**
@@ -76,4 +76,24 @@ export const useDrag = () => {
     position,
     isMoving,
   }
+}
+
+type IUseDraggable = {
+  isActive: Ref<boolean>;
+  changeHandler: (v: boolean) => boolean;
+}
+const draggableKey = 'fl-draggable-key'
+export const useDraggableInit = () => {
+  const isActive = ref(false)
+
+  const changeHandler = (v: boolean) => isActive.value = v
+
+  provide(draggableKey, {
+    isActive,
+    changeHandler
+  })
+}
+
+export const useDraggable = (): IUseDraggable => {
+  return inject(draggableKey) as IUseDraggable
 }

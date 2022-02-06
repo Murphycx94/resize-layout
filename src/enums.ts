@@ -28,6 +28,7 @@ export namespace ActionEnum {
 
 /** 出界方向 */
 export enum OutsideEnum {
+  none,
   n, // 北
   s, // 南
   w, // 西

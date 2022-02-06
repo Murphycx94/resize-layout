@@ -1,12 +1,13 @@
 import { CSSProperties, h, version } from 'vue'
-import { IData, IPosition, ISize, IDragPosition } from '../types'
-import { ActionEnum, DirectionEnum } from '../enums'
+import { IData, IPosition, ISize, IDragPosition, IKeys } from '../types'
+import { ActionEnum, DirectionEnum, OutsideEnum } from '../enums'
 
 const useSafeNumber = (v: string | number = 0, backup = 0) => Number(v) || backup
 
-class Constant {
+export class Constant {
   static readonly width = 220
   static readonly height = 80
+  static readonly dragTriggerBase = 0.3
 }
 
 /**
@@ -50,7 +51,7 @@ export const useAutoResize = (data: IData, size: ISize, position: IPosition = { 
       if (index === children.length - 1) {
         value = Math.max(base - positionValue, minValue)
       } else {
-        value = Math.max(Math.round((useSafeNumber(node[sizeKey], 1) / sum) * base), minValue)
+        value = Math.max(Math.floor((useSafeNumber(node[sizeKey], 1) / sum) * base), minValue)
         positionValue += value
       }
 
@@ -123,32 +124,32 @@ export const getViewStyle = (data: IData, direction: DirectionEnum): CSSProperti
   }
 }
 
-type IKeys = { size: 'width' | 'height'; position: 'top' | 'left'; distance: 'xDistance' | 'yDistance' }
-
-/**
- * 拖动计算并设置节点尺寸和位置信息，如果有返回值，说明已经拖到阈值之外了
- * @param data 
- * @param position 
- * @param index 
- * @returns 
- */
-export const calcDragSize = (
-  data: IData,
-  position: IDragPosition,
-  index: number
-): { action: ActionEnum; direction: DirectionEnum } | undefined => {
+export const getKeysByDirection = (direction: DirectionEnum): IKeys => {
   const keys: IKeys = {
     size: 'width',
     position: 'left',
     distance: 'xDistance',
+    axis: 'x',
   }
 
-  if (data.direction === DirectionEnum.vertical) {
+  if (direction === DirectionEnum.vertical) {
     keys.size = 'height'
     keys.position = 'top'
     keys.distance = 'yDistance'
+    keys.axis = 'y'
   }
 
+  return keys
+}
+
+/**
+ * 拖动计算并设置节点尺寸和位置信息，如果有返回值，说明已经拖到阈值之外了
+ * @param data
+ * @param position
+ * @param index
+ * @returns
+ */
+export const calcDragSize = (data: IData, position: IDragPosition, index: number, keys: IKeys): void => {
   const children = data.children
 
   const distance = position[keys.distance]
@@ -157,19 +158,9 @@ export const calcDragSize = (
   const action = ActionEnum.getAction(distance)
 
   // 如果移动距离为零，则无需往下计算
-  if (action === ActionEnum.static) return {
-    action,
-    direction: data.direction,
-  }
+  if (action === ActionEnum.static) return
 
   const value = extrusionHandler(children, Math.abs(distance), action, index, keys)
-
-  if (value === 0) {
-    return {
-      action,
-      direction: data.direction,
-    }
-  }
 }
 
 /**
@@ -232,15 +223,15 @@ export const getNodesSize = (list: IData[]) => {
 const extrusionHandler = (list: IData[], distance: number, action: ActionEnum, originIndex: number, keys: IKeys) => {
   if (action === ActionEnum.forward) {
     const len = list.length
-    let i = originIndex + 1
-    const leftList = list.slice(i)
+    let i = originIndex
 
-    const { diff } = getNodesSize(leftList)
+    // 把挤压出的空间分给被拉大的节点
+    const current = list[originIndex - 1]
+    const { size, position } = getSize(current)
+    size[keys.size] += distance
+    useAutoResize(current, size, position)
 
-    const threshold = diff[keys.size] // 可以挤压的空间
-    distance = Math.min(threshold, distance) // 挤压距离不能超出挤压空间
-    const value = distance // 可以挤压出的空间
-
+    // 计算被挤压的节点
     for (; i < len; i++) {
       const node = list[i]
       const remainder = node[keys.size] - distance
@@ -260,28 +251,15 @@ const extrusionHandler = (list: IData[], distance: number, action: ActionEnum, o
         break
       }
     }
-
-    // 计算好被挤压的节点之后，可以把挤压出的空间分给被拉大的节点
-    if (value) {
-      const current = list[originIndex]
-      const { size, position } = getSize(current)
-      size[keys.size] += value
-
-      useAutoResize(current, size, position)
-    }
-
-    return value
   } else if (action === ActionEnum.backward) {
     const len = 0
-    let i = originIndex
-    const rightList = list.slice(0, i + 1)
+    let i = originIndex - 1
 
-    const { diff } = getNodesSize(rightList)
-
-    const threshold = diff[keys.size]
-
-    distance = Math.min(threshold, distance)
-    const value = distance // 可以挤压出的空间
+    const current = list[originIndex]
+    const { size, position } = getSize(current)
+    size[keys.size] += distance
+    position[keys.position] -= distance
+    useAutoResize(current, size, position)
 
     for (; i >= len; i--) {
       const node = list[i]
@@ -293,7 +271,7 @@ const extrusionHandler = (list: IData[], distance: number, action: ActionEnum, o
       size[keys.size] = Math.max(remainder, minValue) // 剩余空间不能小于最小限制
       useAutoResize(node, size, position)
 
-      if (i < originIndex) {
+      if (i < originIndex - 1) {
         const prevNode = list[i + 1]
         const { size, position } = getSize(prevNode)
         position[keys.position] -= distance
@@ -307,17 +285,93 @@ const extrusionHandler = (list: IData[], distance: number, action: ActionEnum, o
         break
       }
     }
+  }
+}
 
-    // 计算好被挤压的节点之后，可以把挤压出的空间分给被拉大的节点
-    if (value) {
-      const current = list[originIndex + 1]
-      const { size, position } = getSize(current)
-      size[keys.size] += value
-      position[keys.position] -= value
+/**
+ * 获取鼠标点击相对容器的位置
+ * @param x 鼠标相对视口的 x 轴位置
+ * @param y 鼠标相对视口的 y 轴位置
+ * @param position 容器左上角距离视口左上角的位置
+ */
+export const getRelativePosition = (x: number, y: number, position: { top: number; left: number }) => {
+  return {
+    x: x - position.left,
+    y: y - position.top,
+  }
+}
 
-      useAutoResize(current, size, position)
+/**
+ * 获取安全的坐标，防止超出边界阈值
+ * @param axis 
+ * @param threshold 
+ * @param key 
+ * @returns 
+ */
+export const getSafeAxis = (
+  axis: {
+    x: number
+    y: number
+  },
+  threshold: {
+    min: number
+    max: number
+  },
+  key: 'x' | 'y'
+) => {
+  const _axis = {
+    ...axis
+  }
+
+  _axis[key] = Math.max(threshold.min, _axis[key])
+  _axis[key] = Math.min(threshold.max, _axis[key])
+
+  let outsideDirection = OutsideEnum.none
+  
+  if (axis.x > _axis.x) {
+    outsideDirection = OutsideEnum.e
+  } else if (axis.x < _axis.x) {
+    outsideDirection = OutsideEnum.w
+  } else if (axis.y > _axis.y) {
+    outsideDirection = OutsideEnum.s
+  } else if (axis.y < _axis.y) {
+    outsideDirection = OutsideEnum.n
+  }
+
+  return {..._axis, outsideDirection }
+}
+
+export const getMoveThreshold = (data: IData, index: number, keys: IKeys) => {
+  const children = data.children
+
+  const leftList = children.slice(0, index)
+  const rightList = children.slice(index)
+
+  const leftSize = getNodesSize(leftList)
+  const rightSize = getNodesSize(rightList)
+
+  return {
+    min: leftSize.minSize[keys.size],
+    max: data[keys.size] - rightSize.minSize[keys.size],
+  }
+}
+
+export const setGlobalCursor = (globalCursor?: string) => {
+  // @ts-ignore
+  if (!window._flGlobalCursorStyle) {
+    // @ts-ignore
+    window._flGlobalCursorStyle = document.createElement('style')
+  }
+  // @ts-ignore
+  const styleEl = window._flGlobalCursorStyle
+
+
+  if (globalCursor) {
+    styleEl.innerHTML = globalCursor
+    if (!styleEl.parentElement) {
+      document.body.appendChild(styleEl)
     }
-
-    return value
+  } else if(styleEl.parentElement) {
+    styleEl.parentElement.removeChild(styleEl)
   }
 }
