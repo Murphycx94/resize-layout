@@ -18,7 +18,6 @@ const sashBarRef = ref<VueElement>()
 watch(position, (e) => {
   emits('resize', { ...e, el: sashBarRef.value })
 })
-// isMoving TODO 未做拖动后的鼠标状态
 
 const dragHandler = (e: Event) => {
   onDragStart(e)

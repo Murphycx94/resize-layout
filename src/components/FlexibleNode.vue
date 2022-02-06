@@ -3,12 +3,12 @@
     <div class="split-view-container" :class="[directionClassName]">
       <section
         class="split-view"
-        v-for="(item, index) in data.children"
+        v-for="item in data.children"
         :key="item.nodeId"
         :style="getViewStyle(item, direction)"
       >
         <FlexibleNode :direction="item.direction" v-if="item.type === NodeTypeEnum.node" :data="item" />
-        <FlexibleItem v-else-if="item.type === NodeTypeEnum.item" :data="item" />
+        <FlexibleItem @insert="onInsert" v-else-if="item.type === NodeTypeEnum.item" :data="item" />
       </section>
     </div>
     <FlexibleSash :data="data" :class="[directionClassName]" />
@@ -38,6 +38,9 @@ const directionClassName = computed(() => {
   return name[props.data.direction] || ''
 })
 
+const onInsert = (e: IData) => {
+  console.log(e)
+}
 </script>
 
 <style lang="scss">

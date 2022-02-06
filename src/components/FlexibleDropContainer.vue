@@ -1,14 +1,26 @@
 <template>
-  <div class="fl-drop-container" ref="fdc" v-show="isCompositeActive" @dragover="onDragOver" @dragleave="onDragLeave">
+  <div
+    class="fl-drop-container"
+    ref="fdc"
+    v-show="_isActive"
+    @dragover="onDragOver"
+    @dragleave="onDragLeave"
+    @drop="onDrop"
+  >
     <div class="fl-drop-mask" :style="maskStyle"></div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { throttle } from 'lodash'
 import { computed, nextTick, ref, VueElement, watch } from 'vue'
+import { OutsideEnum } from '../enums'
 import { IData } from '../types'
 import { Constant, getRelativePosition } from './_utils'
+
+const emits = defineEmits<{
+  (e: 'insert', data: IData): void
+}>()
+
 
 const props = defineProps<{
   isActive: boolean
@@ -27,7 +39,7 @@ let vT = Constant.height * Constant.dragTriggerBase // 纵向阈值
 
 const fdc = ref<VueElement>()
 
-const isActive = ref(false)
+const _isActive = ref(false)
 
 // 以当前元素左上角为坐标轴的光标位置
 const cursorPosition = ref({
@@ -35,10 +47,23 @@ const cursorPosition = ref({
   y: 0,
 })
 
-const isCompositeActive = computed(() => {
-  return props.isActive || isActive.value
+const activeArea = computed(() => {
+  const { x, y } = cursorPosition.value
+  const t = getThreshold()
+
+  if (x <= t.x1) {
+    return OutsideEnum.w
+  } else if (x >= t.x2) {
+    return OutsideEnum.e
+  } else if (y <= t.y1) {
+    return OutsideEnum.n
+  } else if (y >= t.y2) {
+    return OutsideEnum.s
+  }
+  return OutsideEnum.e
 })
 
+// TODO 待优化
 const maskStyle = computed(() => {
   const { x, y } = cursorPosition.value
   const t = getThreshold()
@@ -82,11 +107,11 @@ const maskStyle = computed(() => {
 watch(
   () => props.isActive,
   (v) => {
-    if (v) isActive.value = true
+    if (v) _isActive.value = true
   }
 )
 
-watch(isCompositeActive, (v) => {
+watch(_isActive, (v) => {
   if (v) {
     nextTick(() => {
       if (fdc.value) {
@@ -97,20 +122,14 @@ watch(isCompositeActive, (v) => {
   }
 })
 
-const onDragOver = throttle(
-  (e: DragEvent) => {
-    isActive.value = true
-    cursorPosition.value = getRelativePosition(e.pageX, e.pageY, position)
-  },
-  100,
-  {
-    leading: true,
-    trailing: false,
-  }
-)
+const onDragOver = (e: DragEvent) => {
+  cursorPosition.value = getRelativePosition(e.pageX, e.pageY, position)
+  e.preventDefault()
+  return false
+}
 
 const onDragLeave = (e: DragEvent) => {
-  isActive.value = false
+  _isActive.value = false
 }
 
 const getThreshold = () => {
@@ -122,6 +141,18 @@ const getThreshold = () => {
     x2: position.width - hT,
     y1: vT,
     y2: position.height - vT,
+  }
+}
+
+const onDrop = (e: DragEvent) => {
+  _isActive.value = false
+  console.log('========', props.isActive, _isActive.value)
+  const json = e?.dataTransfer?.getData(Constant.dragDataKey)
+  if (json) {
+    const data = JSON.parse(json)
+    if (data.nodeId) {
+      emits('insert', data)
+    }
   }
 }
 </script>

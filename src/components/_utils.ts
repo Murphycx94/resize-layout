@@ -8,6 +8,7 @@ export class Constant {
   static readonly width = 220
   static readonly height = 80
   static readonly dragTriggerBase = 0.3
+  static readonly dragDataKey = 'fl-drag-data'
 }
 
 /**
