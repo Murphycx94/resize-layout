@@ -4,7 +4,17 @@
       {{ data.component }}
     </div>
     <div>{{ content }}</div>
+    <div>元素个数 {{ count * count2 }}</div>
     <div>{{ data.nodeId }}</div>
+    <div v-for="i in count" :key="i">
+      <div>
+        <div>
+          <div>
+            <div v-for="i in count2" :key="i">{{ i }} Lorem, ipsum do</div>
+          </div>
+        </div>
+      </div>
+    </div>
     <FlexibleDropContainer :data="data" :is-active="isHovering" />
   </div>
 </template>
@@ -17,7 +27,7 @@ import FlexibleDropContainer from './FlexibleDropContainer.vue'
 import { Constant } from './_utils'
 
 const props = defineProps<{
-  data: IData,
+  data: IData
 }>()
 
 const content = ref('content: ' + Math.random())
@@ -26,13 +36,18 @@ const isDragging = ref(false)
 
 const isHovering = ref(false)
 
+const count = Math.floor(Math.random() * 100 + 50)
+const count2 = Math.floor(Math.random() * 10 + 2)
+
 const onDragStart = (e: DragEvent) => {
   isDragging.value = true
   e?.dataTransfer?.setData(Constant.dragDataKey, JSON.stringify(props.data))
+  if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'
 }
 
 const onDragEnd = (e: DragEvent) => {
   isDragging.value = false
+  console.log('=======')
 }
 
 const onDragOver = throttle(
@@ -54,6 +69,9 @@ const onDragLeave = (e: DragEvent) => {
 
 <style>
 .fl-item {
+  position: absolute;
+  width: 100%;
+  height: 100%;
   border: 1px solid #ccc;
   width: 100%;
   height: 100%;

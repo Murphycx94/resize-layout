@@ -1,16 +1,9 @@
 <template>
-  <div class="fl-node">
-    <div class="split-view-container" :class="[directionClassName]">
-      <section
-        class="split-view"
-        v-for="item in data.children"
-        :key="item.nodeId"
-        :style="getViewStyle(item, direction)"
-      >
-        <FlexibleNode :direction="item.direction" v-if="item.type === NodeTypeEnum.node" :data="item" />
-        <FlexibleItem @insert="onInsert" v-else-if="item.type === NodeTypeEnum.item" :data="item" />
-      </section>
-    </div>
+  <div class="split-view-container" :class="[directionClassName]">
+    <section class="split-view" v-for="item in data.children" :key="item.nodeId" :style="getViewStyle(item, direction)">
+      <FlexibleNode :direction="item.direction" v-if="item.type === NodeTypeEnum.node" :data="item" />
+      <FlexibleItem @insert="onInsert" v-else-if="item.type === NodeTypeEnum.item" :data="item" />
+    </section>
     <FlexibleSash :data="data" :class="[directionClassName]" />
   </div>
 </template>

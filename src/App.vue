@@ -14,7 +14,7 @@ import { calcNodeMinSize } from './components/_utils'
 const data = reactive<IData>({
   type: NodeTypeEnum.node,
   direction: DirectionEnum.horizontal,
-  nodeId: "1",
+  nodeId: '1',
   width: 0,
   height: 0,
   top: 0,
@@ -22,10 +22,10 @@ const data = reactive<IData>({
   minSize: { width: 1100, height: 240, horizontal: 5, vertical: 3 },
   children: [
     {
-      nodeId: "0",
+      nodeId: '0',
       type: NodeTypeEnum.item,
       direction: DirectionEnum.unknown,
-      component: "text2",
+      component: 'text2',
       width: 0,
       height: 0,
       top: 0,
@@ -34,60 +34,19 @@ const data = reactive<IData>({
       children: [],
     },
     {
-      nodeId: "2",
-      type: NodeTypeEnum.node,
-      direction: DirectionEnum.vertical,
-      component: "text1",
+      nodeId: '0-1',
+      type: NodeTypeEnum.item,
+      direction: DirectionEnum.unknown,
+      component: 'text0-1',
       width: 0,
       height: 0,
       top: 0,
       left: 0,
-      minSize: {
-        width: 440,
-        height: 240,
-        horizontal: 2,
-        vertical: 3,
-      },
-      children: [
-        {
-          nodeId: "2-1",
-          type: NodeTypeEnum.item,
-          direction: DirectionEnum.horizontal,
-          component: "text1-1",
-          width: 0,
-          height: 0,
-          top: 0,
-          left: 0,
-          minSize: {
-            width: 440,
-            height: 80,
-            horizontal: 2,
-            vertical: 0,
-          },
-          children: [
-          ],
-        },
-        {
-          nodeId: "2-2",
-          type: NodeTypeEnum.item,
-          direction: DirectionEnum.unknown,
-          component: "text1-2",
-          width: 0,
-          height: 0,
-          top: 0,
-          left: 0,
-          children: [],
-          minSize: {
-            width: 220,
-            height: 80,
-            horizontal: 0,
-            vertical: 0,
-          },
-        },
-      ],
+      minSize: { width: 220, height: 80, horizontal: 0, vertical: 0 },
+      children: [],
     },
     {
-      nodeId: "4",
+      nodeId: '4',
       type: NodeTypeEnum.node,
       direction: DirectionEnum.vertical,
       width: 0,
@@ -102,10 +61,10 @@ const data = reactive<IData>({
       },
       children: [
         {
-          nodeId: "5",
+          nodeId: '5',
           type: NodeTypeEnum.item,
           direction: DirectionEnum.unknown,
-          component: "text3",
+          component: 'text3',
           width: 0,
           height: 0,
           top: 0,
@@ -119,20 +78,20 @@ const data = reactive<IData>({
           },
         },
         {
-          nodeId: "6",
+          nodeId: '6',
           type: NodeTypeEnum.node,
           direction: DirectionEnum.horizontal,
-          component: "text4",
+          component: 'text4',
           width: 0,
           height: 0,
           top: 0,
           left: 0,
           children: [
             {
-              nodeId: "6-1",
+              nodeId: '6-1',
               type: NodeTypeEnum.item,
               direction: DirectionEnum.unknown,
-              component: "text4-1",
+              component: 'text4-1',
               width: 0,
               height: 0,
               top: 0,
@@ -146,10 +105,10 @@ const data = reactive<IData>({
               },
             },
             {
-              nodeId: "6-2",
+              nodeId: '6-2',
               type: NodeTypeEnum.item,
               direction: DirectionEnum.unknown,
-              component: "text4-2",
+              component: 'text4-2',
               width: 0,
               height: 0,
               top: 0,
@@ -171,10 +130,10 @@ const data = reactive<IData>({
           },
         },
         {
-          nodeId: "7",
+          nodeId: '7',
           type: NodeTypeEnum.item,
           direction: DirectionEnum.unknown,
-          component: "text5",
+          component: 'text5',
           width: 0,
           height: 0,
           top: 0,
@@ -196,6 +155,13 @@ calcNodeMinSize(data)
 
 console.log('=====原始数据', data)
 
+document.addEventListener(
+  'dragover',
+  function (event) {
+    event.preventDefault()
+  },
+  false
+)
 </script>
 
 <style lang="scss">

@@ -447,6 +447,7 @@ export const removeNode = (data: IData, full: IData) => {
   targetParent.children.splice(targetIndex, 1)
 
   if (targetParent.children.length === 1) {
+    if (targetParent.nodeId === full.nodeId) return
     nodeToItem(targetParent, targetParent.children[0])
   }
 }
